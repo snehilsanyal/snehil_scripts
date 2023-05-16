@@ -18,13 +18,16 @@ prompt = PromptTemplate(template=template, input_variables=["question"])
 print(prompt)
 
 # Model path (directory folder) contains pytorch.bin/flaxweights/model.safetensors and tokenizer
-llm_dir = '~/models/llm/'
+llm_dir = '/root/models/llm/'
+llm_model_names = os.listdir(llm_dir)
+# Return models related to bloom-1b1 (Later for further automation)
+# [model_name for model_name in model_names if 'bloom-1b1' in model_name]
 base_model_path = llm_dir + args.model_name
 is_base = True 
 
 ## PEFT tuners
 # Check whether model is LORA model
-is_lora = is_base and base_model_path.endswith('lora')
+is_lora = is_base and ('lora' in args.model_name)
 filelist = os.listdir(base_model_path)
 for file in filelist:
     if is_lora and file.endswith(('adapter_config.json', 'adapter_model.bin')):
@@ -36,6 +39,7 @@ tokenizer = AutoTokenizer.from_pretrained(base_model_path)
 
 # If model is LORA load peft model
 if is_lora:
+    peft_model_path = base_model_path
     peft_model = PeftModel.from_pretrained(base_model, peft_model_id)
     model = peft_model
     print("=========================================================\
@@ -49,7 +53,7 @@ else:
 # max_length has typically been deprecated for max_new_tokens 
 pipe = pipeline(
     "text-generation", model=model, tokenizer = tokenizer,
-      max_new_tokens=30, model_kwargs={"temperature":0})
+      max_new_tokens=32, model_kwargs={"temperature":0})
 hf = HuggingFacePipeline(pipeline=pipe)
 
 llm_chain = LLMChain(prompt=prompt, llm=hf)
