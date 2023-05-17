@@ -5,6 +5,8 @@
 # 3. Merge 2 LLMs into a single pipeline/CustomLLM/ using this script
 import os, argparse
 import torch
+from langchain import PromptTemplate, LLMChain
+# base.py from LLM on top of which we will build custom LLM
 from langchain.llms.base import LLM
 from transformers import AutoModelForCausalML, AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
@@ -23,3 +25,7 @@ class CustomLLM(LLM):
 
     def _llm_type(self):
         return "custom"
+
+prompt = """ """
+llm = CustomLLM(temperature = 0)
+llm_chain = LLMChain(prompt = prompt, llm = llm)
