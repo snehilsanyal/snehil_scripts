@@ -2,7 +2,7 @@
 import argparse 
 import os 
 import numpy as np
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForCausalLM, AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 from peft import PeftModel 
 from langchain import PromptTemplate, LLMChain
 from langchain.llms import HuggingFacePipeline
@@ -58,8 +58,6 @@ else:
   model = base_model
   print("=========================================================\
         Successfully loaded Base Model: {}".format(model_name))
-
-
 template = """Question: {question}
 
 Answer:\n"""
@@ -67,9 +65,10 @@ prompt = PromptTemplate(template=template, input_variables=["question"])
 print(prompt)
 
 # max_length has typically been deprecated for max_new_tokens 
+max_tokens = 64
 pipe = pipeline(
     "text-generation", model=model, tokenizer = tokenizer,
-      max_new_tokens=32, model_kwargs={"temperature":0})
+      max_new_tokens=max_tokens, model_kwargs={"temperature":0})
 hf = HuggingFacePipeline(pipeline=pipe)
 
 llm_chain = LLMChain(prompt=prompt, llm=hf)
